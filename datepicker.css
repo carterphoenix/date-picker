@@ -1,0 +1,41 @@
+/* Styling for the date picker */
+.datepicker-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.datepicker-header button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px 10px;
+    margin: 0 5px;
+}
+
+.datepicker-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.datepicker-table th,
+.datepicker-table td {
+    width: 14%;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.datepicker-table th {
+    background-color: #f2f2f2;
+}
+
+.datepicker-table .other-month {
+    color: #bbb;
+}
+
+.datepicker-table .active {
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
