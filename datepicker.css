@@ -1,41 +1,52 @@
 
-.datepicker-header {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.datepicker-header button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 5px 10px;
-    margin: 0 5px;
-}
-
-.datepicker-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.datepicker-table th,
-.datepicker-table td {
-    width: 14%;
-    text-align: center;
+.datepicker {
+    border: 1px solid #ccc;
     padding: 10px;
-    border: 1px solid #ddd;
+    width: 200px;
+    font-family: Arial, sans-serif;
 }
 
-.datepicker-table th {
-    background-color: #f2f2f2;
+.datepicker .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.datepicker-table .other-month {
-    color: #bbb;
-}
-
-.datepicker-table .active {
-    background-color: #007bff;
-    color: #fff;
+.datepicker .header .prev-month,
+.datepicker .header .next-month {
     cursor: pointer;
+}
+
+.datepicker .days-of-week {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.datepicker .days-of-week span {
+    width: 2em;
+    text-align: center;
+}
+
+.datepicker .dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.datepicker .dates span {
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.datepicker .dates span.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.datepicker .dates span.other-month {
+    color: #ccc;
 }

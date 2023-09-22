@@ -1,42 +1,99 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-  <head>
-    <title>Project 3, Problem 1</title>
-    <link rel="stylesheet" type="text/css" href="datepicker.css" />
-  </head>
-  <body>
-    <h1>First DatePicker</h1>
-    <div id="datepicker1"></div>
-    <h1>Second DatePicker</h1>
-    <div id="datepicker2"></div>
-    <script type="text/javascript" src="DatePicker.js"></script>
-    <script type="text/javascript">
-      // <![CDATA[
-      'use strict';
+class DatePicker {
+  constructor(id, callback) {
+    this.id = id;
+    this.callback = callback;
+    this.currentDate = new Date();
+    this.selectedDate = null;
+  }
 
-      /* global DatePicker */
+  render(date) {
+    // Get the month and year of the provided date
+    const month = date.getMonth();
+    const year = date.getFullYear();
 
-      var datePicker1 = new DatePicker('datepicker1', function (id, fixedDate) {
-        console.log(
-          'DatePicker with id',
-          id,
-          'selected date:',
-          fixedDate.month + '/' + fixedDate.day + '/' + fixedDate.year,
-        );
-      });
-      datePicker1.render(new Date());
-      var datePicker2 = new DatePicker('datepicker2', function (id, fixedDate) {
-        console.log(
-          'DatePicker with id',
-          id,
-          'selected date:',
-          fixedDate.month + '/' + fixedDate.day + '/' + fixedDate.year,
-        );
-      });
-      datePicker2.render(new Date('1/1/2009'));
-      // ]]>
-    </script>
-  </body>
-</html>
+    // Get the first day of the month and the last day of the month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // Create an array of abbreviations for days of the week
+    const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+    // Create the HTML structure for the DatePicker
+    let datePickerHTML = `
+      <div class="datepicker">
+        <div class="header">
+          <span class="prev-month">&lt;</span>
+          <span class="month-year">${this.getMonthName(month)} ${year}</span>
+          <span class="next-month">&gt;</span>
+        </div>
+        <div class="days-of-week">
+          ${daysOfWeek.map(day => `<span>${day}</span>`).join('')}
+        </div>
+        <div class="dates">
+    `;
+
+    // Calculate the number of days to display in the calendar
+    const numDays = lastDay.getDate();
+    const firstDayOfWeek = firstDay.getDay();
+    const numRows = Math.ceil((numDays + firstDayOfWeek) / 7);
+
+    // Fill in the days of the previous month if necessary
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      datePickerHTML += `<span class="other-month">${lastDay.getDate() - firstDayOfWeek + i + 1}</span>`;
+    }
+
+    // Fill in the days of the current month
+    for (let day = 1; day <= numDays; day++) {
+      const currentDate = new Date(year, month, day);
+      const isCurrentMonth = currentDate.getMonth() === month;
+      const isSelected = this.selectedDate && this.selectedDate.getTime() === currentDate.getTime();
+      const className = isCurrentMonth ? (isSelected ? 'selected' : '') : 'other-month';
+      datePickerHTML += `<span class="${className}">${day}</span>`;
+    }
+
+    datePickerHTML += `</div></div>`;
+
+    // Set the HTML content of the specified div
+    const datePickerDiv = document.getElementById(this.id);
+    datePickerDiv.innerHTML = datePickerHTML;
+
+    // Add event listeners for previous and next month buttons
+    const prevMonthBtn = datePickerDiv.querySelector('.prev-month');
+    const nextMonthBtn = datePickerDiv.querySelector('.next-month');
+    prevMonthBtn.addEventListener('click', () => this.showPreviousMonth());
+    nextMonthBtn.addEventListener('click', () => this.showNextMonth());
+
+    // Add event listener for date selection
+    const dateElements = datePickerDiv.querySelectorAll('.dates span:not(.other-month)');
+    dateElements.forEach(element => {
+      element.addEventListener('click', () => this.handleDateClick(element));
+    });
+  }
+
+  getMonthName(month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month];
+  }
+
+  showPreviousMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+    this.render(this.currentDate);
+  }
+
+  showNextMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+    this.render(this.currentDate);
+  }
+
+  handleDateClick(element) {
+    const day = parseInt(element.textContent);
+    const month = this.currentDate.getMonth() + 1; // Month is 0-based
+    const year = this.currentDate.getFullYear();
+    this.selectedDate = { day, month, year };
+    this.callback(this.id, this.selectedDate);
+    this.render(this.currentDate);
+  }
+}
