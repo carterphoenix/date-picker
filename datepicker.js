@@ -1,99 +1,118 @@
+'use strict';
+
 class DatePicker {
-  constructor(id, callback) {
-    this.id = id;
-    this.callback = callback;
-    this.currentDate = new Date();
-    this.selectedDate = null;
-  }
+    constructor(id, onDateChanged) {
+        this.id = id;
+        this.onDateChanged = onDateChanged;
 
-  render(date) {
-    // Get the month and year of the provided date
-    const month = date.getMonth();
-    const year = date.getFullYear();
-
-    // Get the first day of the month and the last day of the month
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    // Create an array of abbreviations for days of the week
-    const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
-    // Create the HTML structure for the DatePicker
-    let datePickerHTML = `
-      <div class="datepicker">
-        <div class="header">
-          <span class="prev-month">&lt;</span>
-          <span class="month-year">${this.getMonthName(month)} ${year}</span>
-          <span class="next-month">&gt;</span>
-        </div>
-        <div class="days-of-week">
-          ${daysOfWeek.map(day => `<span>${day}</span>`).join('')}
-        </div>
-        <div class="dates">
-    `;
-
-    // Calculate the number of days to display in the calendar
-    const numDays = lastDay.getDate();
-    const firstDayOfWeek = firstDay.getDay();
-    const numRows = Math.ceil((numDays + firstDayOfWeek) / 7);
-
-    // Fill in the days of the previous month if necessary
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      datePickerHTML += `<span class="other-month">${lastDay.getDate() - firstDayOfWeek + i + 1}</span>`;
     }
-
-    // Fill in the days of the current month
-    for (let day = 1; day <= numDays; day++) {
-      const currentDate = new Date(year, month, day);
-      const isCurrentMonth = currentDate.getMonth() === month;
-      const isSelected = this.selectedDate && this.selectedDate.getTime() === currentDate.getTime();
-      const className = isCurrentMonth ? (isSelected ? 'selected' : '') : 'other-month';
-      datePickerHTML += `<span class="${className}">${day}</span>`;
+    getTableCaption()
+    {
+        const month = this.renderDate.toLocaleString('default', {month: 'long'});
+        const calendarTableCaption = document.createElement("caption");
+        const cellText = document.createTextNode(month + " " + this.renderDate.getFullYear());
+        calendarTableCaption.appendChild(cellText);
+        return calendarTableCaption;
     }
-
-    datePickerHTML += `</div></div>`;
-
-    // Set the HTML content of the specified div
-    const datePickerDiv = document.getElementById(this.id);
-    datePickerDiv.innerHTML = datePickerHTML;
-
-    // Add event listeners for previous and next month buttons
-    const prevMonthBtn = datePickerDiv.querySelector('.prev-month');
-    const nextMonthBtn = datePickerDiv.querySelector('.next-month');
-    prevMonthBtn.addEventListener('click', () => this.showPreviousMonth());
-    nextMonthBtn.addEventListener('click', () => this.showNextMonth());
-
-    // Add event listener for date selection
-    const dateElements = datePickerDiv.querySelectorAll('.dates span:not(.other-month)');
-    dateElements.forEach(element => {
-      element.addEventListener('click', () => this.handleDateClick(element));
-    });
-  }
-
-  getMonthName(month) {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[month];
-  }
-
-  showPreviousMonth() {
-    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-    this.render(this.currentDate);
-  }
-
-  showNextMonth() {
-    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-    this.render(this.currentDate);
-  }
-
-  handleDateClick(element) {
-    const day = parseInt(element.textContent);
-    const month = this.currentDate.getMonth() + 1; // Month is 0-based
-    const year = this.currentDate.getFullYear();
-    this.selectedDate = { day, month, year };
-    this.callback(this.id, this.selectedDate);
-    this.render(this.currentDate);
-  }
+    getRow(values, rowType)
+    {
+        const row = document.createElement("tr");
+        for (let index = 0; index <  values.length; index++) {
+            const cell = document.createElement(rowType);
+            const cellText = document.createTextNode(values[index].value);
+            cell.appendChild(cellText);
+            if (values[index].active) {
+                const fixedDate = {
+                    month: this.renderDate.getMonth() + 1,
+                    day: values[index].value,
+                    year: this.renderDate.getFullYear()
+                };
+                cell.onclick = () => {this.onDateChanged(this.id, fixedDate);};
+            } else {
+                cell.setAttribute("class", "not-in-month");
+            }
+            row.appendChild(cell);
+        }
+        return row;
+    }
+    static getHeaderRow1Data()
+    {
+        return [{value: "\u2190", active: true},
+            {value: "\u00A0", active: false},
+            {value: "\u00A0", active: false},
+            {value: "\u00A0", active: false},
+            {value: "\u00A0", active: false},
+            {value: "\u00A0", active: false},
+            {value: "\u2192", active: true}];
+    }
+    static getHeaderRow2Data()
+    {
+        return [{value: "Su", active: false},
+            {value: "Mo", active: false},
+            {value: "Tu", active: false},
+            {value: "We", active: false},
+            {value: "Th", active: false},
+            {value: "Fr", active: false},
+            {value: "Sa", active: false}];
+    }
+    getTableHeader()
+    {
+        const date = this.renderDate;
+        const calendarTableHeader = document.createElement("thead");
+        const headerRow = this.getRow(DatePicker.getHeaderRow1Data(), "th");
+        headerRow.children[0].setAttribute("class", "month-selector");
+        headerRow.children[0].onclick = () => {
+            date.setMonth(date.getMonth() - 1);
+            this.render(date);
+        };
+        headerRow.children[6].setAttribute("class", "month-selector");
+        headerRow.children[6].onclick = () => {
+            date.setMonth(date.getMonth() + 1);
+            this.render(date);
+        };
+        calendarTableHeader.appendChild(headerRow);
+        calendarTableHeader.appendChild(this.getRow(DatePicker.getHeaderRow2Data(), "th"));
+        return calendarTableHeader;
+    }
+    getTableBody()
+    {
+        const month = this.renderDate.getMonth();
+        const gridDays = new Date(this.renderDate.getFullYear(), this.renderDate.getMonth(), 1);
+        gridDays.setDate(gridDays.getDate() - gridDays.getDay());
+        const calendarTableBody = document.createElement("tbody");
+        for (let i = 0; i < 7; i++) {
+            if (i > 4 && gridDays.getMonth() !== month) {
+                break;
+            }
+            const rowData = [];
+            for (let j = 0; j < 7; j++) {
+                rowData.push({
+                    value: gridDays.getDate(),
+                    active: gridDays.getMonth() === month
+                });
+                gridDays.setDate(gridDays.getDate() + 1);
+            }
+            const row = this.getRow(rowData, "td");
+            calendarTableBody.appendChild(row);
+        }
+        return calendarTableBody;
+    }
+    getTable()
+    {
+        const calendarTable = document.createElement("table");
+        calendarTable.appendChild(this.getTableCaption());
+        calendarTable.appendChild(this.getTableHeader());
+        calendarTable.appendChild(this.getTableBody());
+        return calendarTable;
+    }
+    render(date) {
+        this.renderDate = date;
+        if (typeof date === "object") {
+            const calendarContainer = document.getElementById(this.id);
+            if (calendarContainer.firstChild !== null) {
+                calendarContainer.removeChild(calendarContainer.firstChild);
+            }
+            calendarContainer.appendChild(this.getTable());
+        }
+    }
 }
