@@ -1,11 +1,16 @@
-function TemplateProcessor(template) {
-    this.template = template;
+class TemplateProcessor {
+  constructor(template) {
+      this.template = template;
   }
-  
-  TemplateProcessor.prototype.fillIn = function (dictionary) {
-    // Use a regular expression to find all instances of {{property}}
-    return this.template.replace(/{{(.*?)}}/g, (match, property) => {
-      // Check if the property exists in the dictionary
-      return dictionary[property] || '';
-    });
-  };
+  fillIn(dictionary){
+      let returnString = this.template;
+      for (const property in dictionary){
+          if (Object.prototype.hasOwnProperty.call(dictionary, property)) {
+              returnString = returnString.replaceAll("{{" + property + "}}",dictionary[property]);
+          }
+      }
+      const regex = /{{.*}}/g;
+      returnString = returnString.replaceAll(regex,"");
+      return returnString;
+  }
+}
